@@ -1,8 +1,15 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { Todo } from "../../../../models/Todo"
+// import NextCors from 'nextjs-cors';
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  console.log('req.method', req.method)
+  // await NextCors(req, res, {
+  //   // Options
+  //   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+  //   origin: '*',
+  //   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+  // });
+
   if (req.method === 'GET') {
     const data = await Todo.getAll()
     return res.status(200).json( data || [] );
