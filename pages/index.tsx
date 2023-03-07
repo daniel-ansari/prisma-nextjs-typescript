@@ -107,7 +107,7 @@ export const getServerSideProps = async () => {
   const todos = await getTodos();
   return {
     props: {
-      todos,
+      todos: todos ? todos : [],
     },
   };
 };
