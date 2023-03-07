@@ -2,7 +2,12 @@ import type {NextPage} from 'next'
 import Head from 'next/head'
 import Image from 'next/image'
 import {useState} from 'react';
-import {deleteTodo, getTodos, createTodo} from "../services/TodoService";
+import {
+  deleteTodo,
+  getTodos,
+  createTodo,
+  updateTodo
+} from "../services/TodoService";
 import {Todo} from '@prisma/client';
 import { useRouter } from 'next/router';
 
@@ -27,6 +32,12 @@ const Home: NextPage<{ todos: Todo[] }> = ({todos = []}) => {
     refreshData();
     setNewTodo('');
     console.log('New todo created:', todo);
+  };
+
+  const handleTodoUpdate = async (id: string, title: string, completed: boolean) => {
+    await updateTodo({id, title, completed})
+    refreshData();
+    console.log(`Todo ${id} is ${completed ? 'done' : 'not done'}`);
   };
 
   const handleTodoDelete = async (id: string) => {
@@ -59,7 +70,15 @@ const Home: NextPage<{ todos: Todo[] }> = ({todos = []}) => {
             {todos.map((todo) => (
               <div className="flex mb-4 items-center" key={todo.id}>
                 <label className="w-full text-grey-darkest flex items-center">
-                {todo.title}
+                  <input
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                    type="checkbox"
+                    checked={todo.completed}
+                    onChange={() => handleTodoUpdate(todo.id, todo.title, !todo.completed)}
+                  />
+                  <span className={todo.completed ? 'ml-2 line-through' : 'ml-2'}>
+                    {todo.title}
+                  </span>
                 </label>
                 <button onClick={() => handleTodoDelete(todo.id)} className="flex-no-shrink p-2 ml-2 border-2 rounded text-red-500 border-red-500 hover:text-white hover:bg-red-400">
                   Delete
