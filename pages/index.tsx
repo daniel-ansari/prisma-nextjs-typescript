@@ -1,70 +1,71 @@
-import type { NextPage } from 'next'
+import type {NextPage} from 'next'
 import Head from 'next/head'
 import Image from 'next/image'
+import {useState} from 'react';
+import {deleteTodo, getTodos, createTodo} from "../services/TodoService";
+import {Todo} from '@prisma/client';
+import { useRouter } from 'next/router';
 
-const Home: NextPage = () => {
+
+const Home: NextPage<{ todos: Todo[] }> = ({todos = []}) => {
+  const router = useRouter();
+  const [newTodo, setNewTodo] = useState('');
+  const handleNewTodoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setNewTodo(event.target.value);
+  };
+
+  const refreshData = () => {
+    router.replace(router.asPath);
+  }
+
+  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const todo = await createTodo({
+      title: newTodo,
+      completed: false
+    } as Todo)
+    refreshData();
+    setNewTodo('');
+    console.log('New todo created:', todo);
+  };
+
+  const handleTodoDelete = async (id: string) => {
+    await deleteTodo(id)
+    refreshData();
+    console.log(`Todo ${id} deleted`);
+  };
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center py-2">
+    <div
+      className="flex min-h-screen flex-col items-center justify-center py-2">
       <Head>
         <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/favicon.ico"/>
       </Head>
 
-      <main className="flex w-full flex-1 flex-col items-center justify-center px-20 text-center">
-        <h1 className="text-6xl font-bold">
-          Welcome to{' '}
-          <a className="text-blue-600" href="https://nextjs.org">
-            Next.js!
-          </a>
-        </h1>
+      <main
+        className="flex w-full flex-1 flex-col items-center justify-center px-20 text-center">
 
-        <p className="mt-3 text-2xl">
-          Get started by editing{' '}
-          <code className="rounded-md bg-gray-100 p-3 font-mono text-lg">
-            pages/index.tsx
-          </code>
-        </p>
-
-        <div className="mt-6 flex max-w-4xl flex-wrap items-center justify-around sm:w-full">
-          <a
-            href="https://nextjs.org/docs"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Documentation &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Find in-depth information about Next.js features and its API.
-            </p>
-          </a>
-
-          <a
-            href="https://nextjs.org/learn"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Learn &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Learn about Next.js in an interactive course with quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Examples &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Discover and deploy boilerplate example Next.js projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Deploy &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+        <div
+          className="mt-6 max-w-4xl flex-wrap items-center justify-around sm:w-full">
+          <h1 className="text-6xl font-bold">My Todos</h1>
+          <form onSubmit={handleFormSubmit} className="mb-4">
+            <div className="flex mt-4">
+              <input type="text" value={newTodo}
+                     onChange={handleNewTodoChange} className="shadow appearance-none border rounded w-full py-2 px-3 mr-4 text-grey-darker"/>
+              <button type="submit" className="flex-no-shrink p-2 border-2 rounded text-blue-500 border-blue-500 hover:text-white hover:bg-blue-400">Add</button>
+            </div>
+          </form>
+            {todos.map((todo) => (
+              <div className="flex mb-4 items-center" key={todo.id}>
+                <label className="w-full text-grey-darkest flex items-center">
+                {todo.title}
+                </label>
+                <button onClick={() => handleTodoDelete(todo.id)} className="flex-no-shrink p-2 ml-2 border-2 rounded text-red-500 border-red-500 hover:text-white hover:bg-red-400">
+                  Delete
+                </button>
+              </div>
+            ))}
         </div>
       </main>
 
@@ -76,11 +77,20 @@ const Home: NextPage = () => {
           rel="noopener noreferrer"
         >
           Powered by{' '}
-          <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
+          <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16}/>
         </a>
       </footer>
     </div>
   )
 }
+
+export const getServerSideProps = async () => {
+  const todos = await getTodos();
+  return {
+    props: {
+      todos,
+    },
+  };
+};
 
 export default Home
