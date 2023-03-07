@@ -16,9 +16,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   } else if (req.method === 'POST') {
     const { title } = req.body;
     const data = await Todo.create(title)
-  console.log('data', data)
     if (!data)
-      return res.status(400).json( 'Error in creating todo' );
+      return res.status(400).json( { message: 'Error in creating todo' });
 
     return res.status(201).json( data );
   } else {
