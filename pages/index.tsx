@@ -104,12 +104,21 @@ const Home: NextPage<{ todos: Todo[] }> = ({todos = []}) => {
 }
 
 export const getServerSideProps = async () => {
-  const todos = await getTodos();
-  return {
-    props: {
-      todos: todos ? todos : [],
-    },
-  };
+  try {
+    const todos = await getTodos();
+    return {
+      props: {
+        todos: todos ? todos : [],
+      },
+    };
+  } catch (e) {
+    console.log('ERROR', e)
+    return {
+      props: {
+        todos: [],
+      },
+    }
+  }
 };
 
 export default Home
